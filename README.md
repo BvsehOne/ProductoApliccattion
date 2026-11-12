@@ -91,7 +91,16 @@ docker run --rm -p 8080:8080 `
   sabor-local
 ```
 
-En producción configura una base de datos persistente y una URL HTTPS pública. H2 en memoria es solo para desarrollo y pierde los datos al reiniciar. El despliegue en un proveedor requiere elegir la plataforma y configurar allí la base de datos, las variables de entorno y el dominio.
+En producción configura PostgreSQL y una URL HTTPS pública. H2 en memoria es solo para desarrollo y pierde los datos al reiniciar. El driver PostgreSQL ya está incluido. Configura la conexión como variables seguras del servicio:
+
+```text
+SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/<base>
+SPRING_DATASOURCE_USERNAME=<usuario>
+SPRING_DATASOURCE_PASSWORD=<contraseña>
+JPA_DDL_AUTO=update
+```
+
+No incluyas credenciales de base de datos en Git. El proyecto está publicado en GitHub con CI, pero aún no está desplegado como una aplicación pública.
 En producción, configura también `H2_CONSOLE_ENABLED=false`.
 
 ## GitHub
