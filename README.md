@@ -68,6 +68,14 @@ La API CRUD conserva estas rutas:
 
 El pago comienza en `POST /api/pagos/iniciar`. El endpoint de retorno de Webpay es `/api/pagos/retorno`.
 
+## Apariencia y fotos del menú
+
+La tienda usa fotografías de comida servidas desde Unsplash. La foto principal es hamburguesa; las tarjetas eligen una foto según palabras del nombre y la categoría (pizza/empanada, papas/frituras, completos/hamburguesas/sándwiches, pollo/aves y ensaladas). Los demás productos usan la foto de hamburguesa como imagen predeterminada. Se necesita conexión a Internet del navegador para cargar estas imágenes. Los datos del producto y la API no dependen de las fotos.
+
+El filtro de categorías y el buscador funcionan en el navegador sobre los productos recibidos de la API. Los controles de edición y eliminación quedan en cada tarjeta; el botón de agregar suma al carrito respetando el stock visible.
+
+Para cambiar textos, colores y categorías de fotografías, probar la tienda antes de publicar y reconstruir la imagen Docker en EC2, sigue la [guía de personalización de la tienda](./docs/guia-tienda-profesional.md).
+
 ## Pruebas y compilación
 
 ```powershell

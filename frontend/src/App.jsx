@@ -3,6 +3,30 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 const PRODUCTOS_URL = `${API_URL}/productos`;
+const defaultFoodImage =
+  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=960&q=82";
+const foodImages = [
+  {
+    categories: /pizza|empanad/,
+    src: "https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=960&q=82",
+  },
+  {
+    categories: /papa|frit/,
+    src: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=960&q=82",
+  },
+  {
+    categories: /complet|hamburg|burger|sandwich|sándwich|sanguch/,
+    src: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=960&q=82",
+  },
+  {
+    categories: /pollo|ave|wrap/,
+    src: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=960&q=82",
+  },
+  {
+    categories: /ensalada|vegetarian/,
+    src: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=960&q=82",
+  },
+];
 const initialProduct = {
   nombre: "",
   descripcion: "",
@@ -22,6 +46,8 @@ function App() {
   const [idEditar, setIdEditar] = useState(null);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [carrito, setCarrito] = useState({});
+  const [busqueda, setBusqueda] = useState("");
+  const [categoriaActiva, setCategoriaActiva] = useState("Todos");
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [pagando, setPagando] = useState(false);
@@ -157,6 +183,24 @@ function App() {
     (suma, linea) => suma + Number(linea.producto.precio) * linea.cantidad,
     0,
   );
+  const categorias = [...new Set(productos.map((producto) => producto.categoria).filter(Boolean))];
+  const productosVisibles = productos.filter((producto) => {
+    const coincideCategoria =
+      categoriaActiva === "Todos" || producto.categoria === categoriaActiva;
+    const termino = busqueda.trim().toLocaleLowerCase("es-CL");
+    const coincideBusqueda =
+      !termino ||
+      `${producto.nombre} ${producto.descripcion} ${producto.categoria}`
+        .toLocaleLowerCase("es-CL")
+        .includes(termino);
+    return coincideCategoria && coincideBusqueda;
+  });
+  const cantidadCarrito = lineasCarrito.reduce((cantidad, linea) => cantidad + linea.cantidad, 0);
+
+  const imagenProducto = (producto) => {
+    const texto = `${producto.nombre} ${producto.categoria}`.toLocaleLowerCase("es-CL");
+    return foodImages.find(({ categories: patron }) => patron.test(texto))?.src || defaultFoodImage;
+  };
 
   const iniciarPago = async () => {
     setPagando(true);
@@ -219,34 +263,62 @@ function App() {
       <header className="site-header">
         <nav className="container navbar navbar-expand">
           <a className="brand" href="/" aria-label="Sabor Local, inicio">
-            <span className="brand-mark">SL</span>
+            <span className="brand-mark" aria-hidden="true">SL</span>
             <span>Sabor <strong>Local</strong></span>
           </a>
-          <a className="cart-link" href="#carrito">
-            <span aria-hidden="true">🛒</span> Mi carrito
-            <span className="cart-count">
-              {lineasCarrito.reduce((cantidad, linea) => cantidad + linea.cantidad, 0)}
-            </span>
-          </a>
+          <div className="header-links">
+            <a className="header-menu-link" href="#productos">Nuestro menú</a>
+            <a className="cart-link" href="#carrito" aria-label={`Mi carrito, ${cantidadCarrito} productos`}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                <path d="M3 4h2l2.2 10.1a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 8H6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="10" cy="20" r="1" fill="currentColor" />
+                <circle cx="18" cy="20" r="1" fill="currentColor" />
+              </svg>
+              <span>Mi pedido</span>
+              <span className="cart-count">{cantidadCarrito}</span>
+            </a>
+          </div>
         </nav>
       </header>
 
       <main>
         <section className="hero">
           <div className="container hero-content">
-            <div>
-              <p className="eyebrow">HECHO CON SABOR, HECHO CERCA</p>
-              <h1>Lo rico de siempre,<br /><span>a un clic de distancia.</span></h1>
+            <div className="hero-copy-block">
+              <span className="hero-kicker"><span className="hero-kicker-dot" /> SABOR QUE SE NOTA</span>
+              <h1>Hoy se come<br /><span>algo increíble.</span></h1>
               <p className="hero-copy">
-                Descubre nuestros favoritos y arma tu pedido para disfrutar.
+                Tus antojos favoritos, preparados con cariño y listos para disfrutar.
               </p>
-              <a className="btn btn-light hero-button" href="#productos">Ver productos</a>
+              <div className="hero-actions">
+                <a className="hero-button" href="#productos">Explorar el menú <span aria-hidden="true">→</span></a>
+                <span className="hero-note">Fresco, rico y sin complicaciones</span>
+              </div>
             </div>
-            <div className="hero-illustration" aria-hidden="true">
-              <span className="food-circle">🍔</span>
-              <span className="food-spark spark-one">✦</span>
-              <span className="food-spark spark-two">✦</span>
+            <div className="hero-photo-wrap">
+              <img
+                className="hero-photo"
+                src={defaultFoodImage.replace("w=960", "w=1400")}
+                alt="Hamburguesa preparada con ingredientes frescos"
+                fetchPriority="high"
+                onError={(event) => {
+                  event.currentTarget.style.visibility = "hidden";
+                }}
+              />
+              <div className="hero-photo-caption">
+                <span className="hero-caption-mark">SL</span>
+                <span><strong>Tu pausa favorita</strong><small>Empieza por algo rico</small></span>
+              </div>
+              <div className="hero-photo-sticker"><span>100%</span><small>antojo</small></div>
             </div>
+          </div>
+        </section>
+
+        <section className="promise-strip" aria-label="Ventajas de comprar">
+          <div className="container promise-items">
+            <div><span className="promise-icon">01</span><span><strong>Hecho para disfrutar</strong><small>Un menú lleno de favoritos</small></span></div>
+            <div><span className="promise-icon">02</span><span><strong>Compra simple</strong><small>Arma tu pedido en segundos</small></span></div>
+            <div><span className="promise-icon">03</span><span><strong>Pago protegido</strong><small>Webpay Plus de Transbank</small></span></div>
           </div>
         </section>
 
@@ -260,80 +332,139 @@ function App() {
           )}
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
-          <div className="section-heading" id="productos">
-            <div>
-              <p className="eyebrow">NUESTRO CATÁLOGO</p>
-              <h2>Productos para disfrutar</h2>
+          <section className="menu-section" id="productos">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">ELIGE ALGO RICO</p>
+                <h2>Lo bueno está en el menú.</h2>
+                <p className="section-subtitle">Encuentra tu favorito y agrégalo al pedido.</p>
+              </div>
+              <button className="btn btn-primary add-product-button" onClick={abrirCrear}>
+                <span aria-hidden="true">＋</span> Agregar producto
+              </button>
             </div>
-            <button className="btn btn-primary" onClick={abrirCrear}>
-              <span aria-hidden="true">＋</span> Agregar producto
-            </button>
-          </div>
+
+            {productos.length > 0 && (
+              <div className="menu-tools">
+                <div className="category-filters" aria-label="Filtrar por categoría">
+                  {["Todos", ...categorias].map((categoria) => (
+                    <button
+                      className={`category-filter ${categoriaActiva === categoria ? "active" : ""}`}
+                      key={categoria}
+                      onClick={() => setCategoriaActiva(categoria)}
+                    >
+                      {categoria === "Todos" ? "Todo el menú" : categoria}
+                    </button>
+                  ))}
+                </div>
+                <label className="search-box">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                    <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                  <input
+                    type="search"
+                    placeholder="Buscar en el menú"
+                    value={busqueda}
+                    onChange={(event) => setBusqueda(event.target.value)}
+                    aria-label="Buscar productos"
+                  />
+                </label>
+              </div>
+            )}
 
           {cargando ? (
-            <div className="loading-state"><div className="spinner-border text-primary" />Cargando productos…</div>
+            <div className="loading-state"><div className="spinner-border text-primary" />Preparando el menú…</div>
           ) : productos.length === 0 ? (
             <div className="empty-state">
-              <span aria-hidden="true">🍽️</span>
-              <h3>Aún no hay productos</h3>
-              <p>Agrega el primero para comenzar a armar tu catálogo.</p>
+              <div className="empty-state-photo">
+                <img src={defaultFoodImage} alt="" />
+              </div>
+              <p className="eyebrow">LA COCINA ESTÁ LISTA</p>
+              <h3>Aún no hay productos en el menú</h3>
+              <p>Agrega el primer favorito y empieza a recibir pedidos.</p>
+              <button className="btn btn-primary mt-2" onClick={abrirCrear}>Agregar primer producto</button>
+            </div>
+          ) : productosVisibles.length === 0 ? (
+            <div className="no-results">
+              <strong>No encontramos ese antojo.</strong>
+              <span>Prueba con otro nombre o categoría.</span>
+              <button className="btn btn-link" onClick={() => { setBusqueda(""); setCategoriaActiva("Todos"); }}>
+                Ver todo el menú
+              </button>
             </div>
           ) : (
-            <div className="row g-4 product-grid">
-              {productos.map((producto) => (
-                <div className="col-sm-6 col-lg-4" key={producto.id}>
-                  <article className="product-card h-100">
-                    <div className="product-art" aria-hidden="true">🥪</div>
-                    <div className="product-body">
-                      <div className="d-flex justify-content-between gap-2">
-                        <span className="category-tag">{producto.categoria}</span>
-                        <span className={`stock-tag ${producto.stock === 0 ? "out-of-stock" : ""}`}>
-                          {producto.stock > 0 ? `${producto.stock} disponibles` : "Agotado"}
-                        </span>
-                      </div>
-                      <h3>{producto.nombre}</h3>
-                      <p className="product-description">{producto.descripcion}</p>
-                      <div className="product-footer">
-                        <strong className="product-price">{pesos.format(producto.precio)}</strong>
-                        <button
-                          className="btn btn-sm btn-outline-primary"
-                          disabled={producto.stock < 1}
-                          onClick={() => cambiarCantidad(producto, (carrito[producto.id] || 0) + 1)}
-                        >
-                          Agregar al carrito
-                        </button>
-                      </div>
-                      <div className="product-actions">
-                        <button className="btn btn-link btn-sm" onClick={() => editarProducto(producto.id)}>
-                          Editar
-                        </button>
-                        <button className="btn btn-link btn-sm text-danger" onClick={() => eliminarProducto(producto)}>
-                          Eliminar
-                        </button>
-                      </div>
+            <div className="product-grid">
+              {productosVisibles.map((producto) => (
+                <article className="product-card" key={producto.id}>
+                  <div className="product-image-wrap">
+                    <img
+                      className="product-image"
+                      src={imagenProducto(producto)}
+                      alt={producto.nombre}
+                      loading="lazy"
+                      onError={(event) => {
+                        if (event.currentTarget.src !== defaultFoodImage) {
+                          event.currentTarget.src = defaultFoodImage;
+                        } else {
+                          event.currentTarget.style.visibility = "hidden";
+                        }
+                      }}
+                    />
+                    <span className={`stock-tag ${producto.stock === 0 ? "out-of-stock" : ""}`}>
+                      {producto.stock > 0 ? "Disponible" : "Agotado"}
+                    </span>
+                    <div className="product-admin-actions" aria-label={`Administrar ${producto.nombre}`}>
+                      <button aria-label={`Editar ${producto.nombre}`} title="Editar producto" onClick={() => editarProducto(producto.id)}>✎</button>
+                      <button aria-label={`Eliminar ${producto.nombre}`} title="Eliminar producto" onClick={() => eliminarProducto(producto)}>×</button>
                     </div>
-                  </article>
-                </div>
+                  </div>
+                  <div className="product-body">
+                    <span className="category-tag">{producto.categoria || "Favorito de la casa"}</span>
+                    <h3>{producto.nombre}</h3>
+                    <p className="product-description">{producto.descripcion}</p>
+                    <div className="product-footer">
+                      <strong className="product-price">{pesos.format(producto.precio)}</strong>
+                      <button
+                        className="add-to-cart-button"
+                        disabled={producto.stock < 1}
+                        onClick={() => cambiarCantidad(producto, (carrito[producto.id] || 0) + 1)}
+                      >
+                        <span aria-hidden="true">＋</span> Agregar
+                      </button>
+                    </div>
+                    <p className="stock-caption">{producto.stock > 0 ? `${producto.stock} unidades disponibles` : "Vuelve pronto"}</p>
+                  </div>
+                </article>
               ))}
             </div>
           )}
+          </section>
 
           <section className="cart-section" id="carrito">
             <div className="section-heading">
               <div>
-                <p className="eyebrow">TU PEDIDO</p>
-                <h2>Mi carrito</h2>
+                <p className="eyebrow">UN ÚLTIMO PASO</p>
+                <h2>Tu pedido</h2>
               </div>
             </div>
             {lineasCarrito.length === 0 ? (
-              <p className="cart-empty">Tu carrito está vacío. Agrega algo rico del catálogo.</p>
+              <div className="cart-empty">
+                <span className="cart-empty-mark" aria-hidden="true">＋</span>
+                <div><strong>Tu pedido empieza aquí</strong><span>Agrega algo rico del menú para continuar.</span></div>
+                <a href="#productos" className="cart-empty-link">Ver menú <span aria-hidden="true">→</span></a>
+              </div>
             ) : (
               <div className="cart-card">
+                <div className="cart-card-heading">
+                  <span>Tu selección</span>
+                  <span>{cantidadCarrito} {cantidadCarrito === 1 ? "producto" : "productos"}</span>
+                </div>
                 {lineasCarrito.map(({ producto, cantidad }) => (
                   <div className="cart-row" key={producto.id}>
                     <div>
                       <strong>{producto.nombre}</strong>
-                      <span>{pesos.format(producto.precio)} c/u</span>
+                      <span>{pesos.format(producto.precio)} cada uno</span>
                     </div>
                     <div className="quantity-control">
                       <button aria-label={`Quitar uno de ${producto.nombre}`} onClick={() => cambiarCantidad(producto, cantidad - 1)}>−</button>
@@ -344,13 +475,13 @@ function App() {
                   </div>
                 ))}
                 <div className="cart-total">
-                  <span>Total</span>
-                  <strong>{pesos.format(total)}</strong>
+                  <span><strong>Total del pedido</strong><small>Impuestos incluidos</small></span>
+                  <strong className="cart-total-amount">{pesos.format(total)}</strong>
                 </div>
                 <button className="btn btn-primary checkout-button" onClick={iniciarPago} disabled={pagando}>
-                  {pagando ? "Conectando con Transbank…" : "Pagar con Webpay Plus"}
+                  {pagando ? "Conectando con Transbank…" : <>Continuar con Webpay <span aria-hidden="true">→</span></>}
                 </button>
-                <p className="payment-note">El precio y el stock se validan nuevamente antes del pago.</p>
+                <p className="payment-note"><span aria-hidden="true">◇</span> Pago protegido · El stock se confirma al pagar</p>
               </div>
             )}
           </section>
@@ -359,8 +490,9 @@ function App() {
 
       <footer className="site-footer">
         <div className="container d-flex justify-content-between flex-wrap gap-2">
-          <span>Sabor Local</span>
-          <span>Pagos de prueba protegidos por Webpay Plus</span>
+          <span className="footer-brand">Sabor <strong>Local</strong></span>
+          <span>Una pausa rica empieza aquí.</span>
+          <span>Pagos de prueba con Webpay Plus</span>
         </div>
       </footer>
 
