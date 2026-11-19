@@ -89,6 +89,20 @@ class ProductosApplicationTests {
         assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
+    @Test
+    void rutaDeResultadoDePagoSirveLaAplicacionReact() throws Exception {
+        HttpRequest solicitud =
+                HttpRequest.newBuilder(URI.create(rootUrl() + "/pago/resultado?estado=ACEPTADO"))
+                        .GET()
+                        .build();
+
+        HttpResponse<String> respuesta =
+                HttpClient.newHttpClient().send(solicitud, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(respuesta.body()).contains("Sabor Local");
+    }
+
     private String baseUrl() {
         return rootUrl() + "/api/productos";
     }

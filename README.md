@@ -103,6 +103,10 @@ JPA_DDL_AUTO=update
 No incluyas credenciales de base de datos en Git. El proyecto está publicado en GitHub con CI, pero aún no está desplegado como una aplicación pública.
 En producción, configura también `H2_CONSOLE_ENABLED=false`.
 
+## Desplegar en AWS EC2
+
+Para clonar este repositorio en una instancia Amazon Linux 2023, compilar y ejecutar la tienda/API en Docker, configurar las reglas de red, probar Webpay de integración y preparar la propuesta de autoescalado, sigue la [guía de despliegue AWS EC2](./docs/despliegue-aws-ec2.md).
+
 ## GitHub
 
 El repositorio debe incluir el código fuente, no `target/`, `node_modules/`, archivos `.env` ni claves privadas. El workflow `.github/workflows/ci.yml` valida cada push y pull request. El proyecto debe estar en un repositorio GitHub al que tengas acceso de escritura para poder publicar cambios.
