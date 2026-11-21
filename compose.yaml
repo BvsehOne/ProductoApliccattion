@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-carrito_compras}
+      POSTGRES_USER: ${DB_USER:-carrito_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD in the root .env file}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  productos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-carrito_compras}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-carrito_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD in the root .env file}
+      JPA_DDL_AUTO: update
+      H2_CONSOLE_ENABLED: "false"
+      TRANSBANK_ENVIRONMENT: integration
+      FRONTEND_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      BACKEND_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:

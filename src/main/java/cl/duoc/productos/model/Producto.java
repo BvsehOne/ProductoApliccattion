@@ -4,24 +4,37 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
+@Table(name = "productos")
 public class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String nombre;
+
+    @Column(length = 255)
     private String descripcion;
-    private double precio;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal precio;
+
+    @Column(nullable = false)
     private int stock;
+
+    @Column(length = 50)
     private String categoria;
 
     public Producto() {
     }
 
-    public Producto(String nombre, String descripcion, double precio, int stock, String categoria) {
+    public Producto(String nombre, String descripcion, BigDecimal precio, int stock, String categoria) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
@@ -53,11 +66,11 @@ public class Producto {
         this.descripcion = descripcion;
     }
 
-    public double getPrecio() {
+    public BigDecimal getPrecio() {
         return precio;
     }
 
-    public void setPrecio(double precio) {
+    public void setPrecio(BigDecimal precio) {
         this.precio = precio;
     }
 

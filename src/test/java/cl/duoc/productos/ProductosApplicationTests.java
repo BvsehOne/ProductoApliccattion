@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import cl.duoc.productos.model.Producto;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -25,7 +26,8 @@ class ProductosApplicationTests {
         String url = baseUrl();
         ObjectMapper objectMapper = new ObjectMapper();
         HttpClient httpClient = HttpClient.newHttpClient();
-        Producto nuevo = new Producto("Completo", "Italiano", 3990, 20, "Comida Rapida");
+        Producto nuevo = new Producto(
+                "Completo", "Italiano", new BigDecimal("3990.00"), 20, "Comida Rapida");
 
         HttpRequest documentacion = HttpRequest.newBuilder(URI.create(rootUrl() + "/v3/api-docs"))
                 .GET()
@@ -42,6 +44,7 @@ class ProductosApplicationTests {
         assertThat(creado.statusCode()).isEqualTo(HttpStatus.OK.value());
         Producto productoCreado = objectMapper.readValue(creado.body(), Producto.class);
         assertThat(productoCreado.getId()).isNotNull();
+        assertThat(productoCreado.getPrecio()).isEqualByComparingTo("3990.00");
         Long id = productoCreado.getId();
 
         HttpRequest consultar = HttpRequest.newBuilder(URI.create(url + "/" + id)).GET().build();

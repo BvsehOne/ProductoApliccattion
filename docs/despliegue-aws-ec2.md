@@ -97,7 +97,9 @@ Crea un producto, agrégalo al carrito y realiza una compra de prueba con las ta
 
 Si el navegador no conecta, confirma que el contenedor está activo, revisa `sudo docker logs -f productos`, verifica la IP pública y el puerto 8080 en el Security Group. El `@CrossOrigin` de `localhost:5173` solo se necesita para desarrollo local: en EC2 el frontend y `/api` tienen el mismo origen.
 
-## 7. Actualizar después de publicar cambios en GitHub
+## 7. Actualizar el despliegue existente con H2
+
+Este procedimiento conserva el modo H2 temporal. Para cambiar el despliegue a PostgreSQL persistente con Docker Compose, sigue la [guía de PostgreSQL en EC2](./postgres-ec2.md) en vez de volver a ejecutar este comando `docker run`.
 
 En la VM:
 

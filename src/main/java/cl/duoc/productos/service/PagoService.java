@@ -70,11 +70,11 @@ public class PagoService {
                 throw new ResponseStatusException(
                         HttpStatus.CONFLICT, "Stock insuficiente para " + producto.getNombre());
             }
-            if (!Double.isFinite(producto.getPrecio()) || producto.getPrecio() <= 0) {
+            BigDecimal precio = producto.getPrecio();
+            if (precio == null || precio.signum() <= 0) {
                 throw new ResponseStatusException(
                         HttpStatus.CONFLICT, "El precio de " + producto.getNombre() + " no es válido");
             }
-            BigDecimal precio = BigDecimal.valueOf(producto.getPrecio());
             if (precio.stripTrailingZeros().scale() > 0) {
                 throw new ResponseStatusException(
                         HttpStatus.CONFLICT, "El precio debe expresarse en pesos enteros");

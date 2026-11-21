@@ -111,6 +111,8 @@ JPA_DDL_AUTO=update
 No incluyas credenciales de base de datos en Git. El proyecto está publicado en GitHub con CI, pero aún no está desplegado como una aplicación pública.
 En producción, configura también `H2_CONSOLE_ENABLED=false`.
 
+Para levantar PostgreSQL 15 junto con la aplicación en Docker Compose, crea `.env` desde `.env.example` y sigue la [guía de PostgreSQL persistente en EC2](./docs/postgres-ec2.md). PostgreSQL queda en una red privada de Compose y persiste en el volumen `postgres_data`; el archivo `.env` no se publica.
+
 ## Desplegar en AWS EC2
 
 Para clonar este repositorio en una instancia Amazon Linux 2023, compilar y ejecutar la tienda/API en Docker, configurar las reglas de red, probar Webpay de integración y preparar la propuesta de autoescalado, sigue la [guía de despliegue AWS EC2](./docs/despliegue-aws-ec2.md).
